@@ -7,13 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { retrieveSubscribersCollection } from "@/components/util";
 import { db } from "@/firebase/firebase";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteDoc, doc, getDocs, query, updateDoc } from "firebase/firestore";
+import { doc, query } from "firebase/firestore";
 import { AlertTriangle, Eye, EyeOff, Loader2, Phone, Search, Trash2, Car, Bike, Truck, Bus, Pencil } from "lucide-react";
 import { formatCurrency } from "@/lib/formatters";
 import { normalizePlate } from "@/lib/plate-utils";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { toast } from "sonner";
+import { safeDeleteDoc, safeGetDocs, safeUpdateDoc } from "@/lib/firestore-safe";
 
 const SubscribersView = ({ user }: { user: User }) => {
   const queryClient = useQueryClient();
@@ -27,7 +28,7 @@ const SubscribersView = ({ user }: { user: User }) => {
   const { data: subscribers = [], isLoading } = useQuery({
     queryKey: ['subscribers'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveSubscribersCollection()));
+      const snapshot = await safeGetDocs(query(retrieveSubscribersCollection()));
       return snapshot.docs.map(docItem => ({ ...docItem.data(), id: docItem.id })) as Subscriber[];
     },
     enabled: !!user
@@ -35,7 +36,7 @@ const SubscribersView = ({ user }: { user: User }) => {
 
   const deleteMutation = useMutation({
     mutationFn: async (subscriberId: string) => {
-      await deleteDoc(doc(db, 'subscribers', subscriberId));
+      await safeDeleteDoc(doc(db, 'subscribers', subscriberId));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscribers'] });
@@ -50,7 +51,7 @@ const SubscribersView = ({ user }: { user: User }) => {
   const updateMutation = useMutation({
     mutationFn: async () => {
       if (!selectedSubscriber?.id) throw new Error('No hay suscriptor seleccionado');
-      await updateDoc(doc(db, 'subscribers', selectedSubscriber.id), {
+      await safeUpdateDoc(doc(db, 'subscribers', selectedSubscriber.id), {
         name: editForm.name.trim(),
         documentId: editForm.documentId.trim(),
         phone: editForm.phone.trim(),
@@ -114,12 +115,12 @@ const SubscribersView = ({ user }: { user: User }) => {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <Card className="border border-border/70 bg-card/80 shadow-sm">
-        <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
+      <Card className="border border-border/40 bg-card/80 shadow-sm">
+        <CardContent className="grid gap-3 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+          <div className="relative w-full sm:max-w-2xl">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              className="pl-9"
+              className="h-10 pl-9"
               placeholder="Buscar por nombre, placa o documento..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -128,7 +129,7 @@ const SubscribersView = ({ user }: { user: User }) => {
           <Button
             variant={showHidden ? "default" : "outline"}
             onClick={() => setShowHidden((current) => !current)}
-            className="w-full sm:w-auto"
+            className="h-10 w-full px-5 sm:w-auto sm:min-w-47.5"
           >
             {showHidden ? <Eye className="mr-2 h-4 w-4" /> : <EyeOff className="mr-2 h-4 w-4" />}
             {showHidden ? "Ver activos" : `Ver ocultos (${hiddenCount})`}

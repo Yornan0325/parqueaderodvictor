@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { useQuery } from '@tanstack/react-query';
-import { getDocs, orderBy, query } from 'firebase/firestore';
+import { orderBy, query } from 'firebase/firestore';
 import { Clock3, Loader2, Search } from 'lucide-react';
 
 import { retrieveHistoryCollection } from '@/components/util';
@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/formatters';
+import { safeGetDocs } from '@/lib/firestore-safe';
 
 const HistoryView = ({ user }: { user: User }) => {
   const [search, setSearch] = useState('');
@@ -27,7 +28,7 @@ const HistoryView = ({ user }: { user: User }) => {
   const { data: historyEntries = [], isLoading } = useQuery({
     queryKey: ['history'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveHistoryCollection(), orderBy('exitTime', 'desc')));
+      const snapshot = await safeGetDocs(query(retrieveHistoryCollection(), orderBy('exitTime', 'desc')));
       return snapshot.docs.map((docItem) => ({ ...docItem.data(), id: docItem.id })) as HistoryEntry[];
     },
     enabled: !!user,

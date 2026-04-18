@@ -16,6 +16,7 @@ import LoginPage from "./pages/sesion/LoginPage"
 import RegisterPage from "./pages/sesion/RegisterPage"
 import HistoryView from "./pages/HistoryView"
 import ConfigurationView from "./pages/ConfigurationView"
+import { initializeOfflineSync } from "./lib/firestore-safe"
 
 function AppBootLoader() {
   return (
@@ -33,6 +34,10 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { data: profile, isLoading: profileLoading } = useUserProfile(user);
+
+  useEffect(() => {
+    initializeOfflineSync()
+  }, [])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

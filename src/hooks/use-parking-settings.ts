@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { onSnapshot } from 'firebase/firestore';
 
 import { VEHICLE_RATES, type ParkingSettings, type VehicleType } from '@/components/types';
 import { parkingSettingsDocument } from '@/components/util';
+import { safeGetDoc, safeSetDoc } from '@/lib/firestore-safe';
 
 const SETTINGS_KEY = 'parking_settings';
 const DEFAULT_CAPACITY = 50;
@@ -49,7 +50,7 @@ export const useParkingSettings = () => {
   useEffect(() => {
     let mounted = true;
 
-    getDoc(settingsDocRef)
+    safeGetDoc(settingsDocRef)
       .then((snapshot) => {
         if (!mounted) return;
         if (snapshot.exists()) {
@@ -84,7 +85,7 @@ export const useParkingSettings = () => {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
 
     try {
-      await setDoc(settingsDocRef, nextSettings, { merge: true });
+      await safeSetDoc(settingsDocRef, nextSettings, { merge: true });
     } catch (error) {
       console.error('No se pudo guardar la configuracion remota:', error);
     }

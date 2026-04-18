@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { UserProfile } from '@/components/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { doc, getDocs, query, setDoc } from 'firebase/firestore';
+import { doc, query } from 'firebase/firestore';
 import { Loader2, Pencil, ShieldUser } from 'lucide-react';
 
 import { retrieveUsersCollection } from '@/components/util';
@@ -19,6 +19,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { safeGetDocs, safeSetDoc } from '@/lib/firestore-safe';
 
 const mapStoredUser = (
   data: Partial<UserProfile> & Record<string, unknown>,
@@ -51,7 +52,7 @@ const UsersView = () => {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveUsersCollection()));
+      const snapshot = await safeGetDocs(query(retrieveUsersCollection()));
       return snapshot.docs.map((docItem) =>
         mapStoredUser(
           docItem.data() as Partial<UserProfile> & Record<string, unknown>,
@@ -68,7 +69,7 @@ const UsersView = () => {
         throw new Error('El correo es obligatorio');
       }
 
-      await setDoc(
+      await safeSetDoc(
         doc(db, 'usuarios', email),
         {
           ...selectedUser,

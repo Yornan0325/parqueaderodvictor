@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import type { User } from 'firebase/auth';
-import { getDoc } from 'firebase/firestore';
 
 import type { UserProfile } from '@/components/types';
 import { userProfileDocument } from '@/components/util';
+import { safeGetDoc } from '@/lib/firestore-safe';
 
 const fallbackProfile = (user: User): UserProfile => ({
   uid: user.uid,
@@ -61,10 +61,10 @@ export const useUserProfile = (user: User | null) =>
       const authEmail = user.email;
       const normalizedAuthEmail = normalizeEmail(authEmail);
 
-      let snapshot = await getDoc(userProfileDocument(authEmail));
+      let snapshot = await safeGetDoc(userProfileDocument(authEmail));
 
       if (!snapshot.exists() && normalizedAuthEmail !== authEmail) {
-        snapshot = await getDoc(userProfileDocument(normalizedAuthEmail));
+        snapshot = await safeGetDoc(userProfileDocument(normalizedAuthEmail));
       }
 
       if (!snapshot.exists()) {

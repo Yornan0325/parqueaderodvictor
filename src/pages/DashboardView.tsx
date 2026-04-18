@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { User } from "firebase/auth";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteDoc, doc, getDocs, query } from "firebase/firestore";
+import { doc, query } from "firebase/firestore";
 import { Bike, Car, Loader2, Search, Bus, Truck, Bluetooth, Pencil } from "lucide-react";
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
 import type { ParkedVehicle } from "@/components/types";
@@ -14,10 +14,10 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { usePrinter } from "@/hooks/use-printer";
 import { generateExitTicket } from "@/lib/receipt-utils";
-import { addDoc } from "firebase/firestore";
 import { formatCurrency } from "@/lib/formatters";
 import { useParkingSettings } from "@/hooks/use-parking-settings";
 import { toast } from "sonner";
+import { safeAddDoc, safeDeleteDoc, safeGetDocs } from "@/lib/firestore-safe";
 
 const DashboardView = ({ user }: { user: User }) => {
   const queryClient = useQueryClient();
@@ -41,7 +41,7 @@ const DashboardView = ({ user }: { user: User }) => {
   const { data: parkedVehicles = [], isLoading } = useQuery({
     queryKey: ['vehicles'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveVehiclesCollection()));
+      const snapshot = await safeGetDocs(query(retrieveVehiclesCollection()));
       return snapshot.docs.map(docItem => ({ ...docItem.data(), id: docItem.id })) as ParkedVehicle[];
     },
     enabled: !!user
@@ -49,7 +49,7 @@ const DashboardView = ({ user }: { user: User }) => {
 
   const deleteMutation = useMutation({
     mutationFn: async ({ vehicle, method, amount }: { vehicle: ParkedVehicle, method: string, amount: number }) => {
-      await addDoc(deliverHistoryEntry(), {
+      await safeAddDoc(deliverHistoryEntry(), {
         ...vehicle,
         exitTime: Date.now(),
         totalPaid: amount,
@@ -57,7 +57,7 @@ const DashboardView = ({ user }: { user: User }) => {
         status: 'COMPLETED'
       });
 
-      await deleteDoc(doc(deliverVehicleEntry(), vehicle.id));
+      await safeDeleteDoc(doc(deliverVehicleEntry(), vehicle.id));
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['vehicles'] });

@@ -4,7 +4,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import type { User } from 'firebase/auth';
-import { addDoc, getDocs, query } from 'firebase/firestore';
+import { query } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 import { Car, Bike, Truck, DollarSign, Loader2, Bus, Motorbike } from 'lucide-react';
 
@@ -22,6 +22,7 @@ import { getPlateValidationError, normalizePlate } from '@/lib/plate-utils';
 import { useParkingSettings } from '@/hooks/use-parking-settings';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { safeAddDoc, safeGetDocs } from '@/lib/firestore-safe';
 
 const isSubscriberActive = (subscriber: Subscriber) => {
   const expiryDate = new Date(`${subscriber.expiryDate}T23:59:59`);
@@ -42,7 +43,7 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
   const { data: subscribers = [] } = useQuery({
     queryKey: ['subscribers'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveSubscribersCollection()));
+      const snapshot = await safeGetDocs(query(retrieveSubscribersCollection()));
       return snapshot.docs.map((docItem) => ({
         ...docItem.data(),
         id: docItem.id,
@@ -54,7 +55,7 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
   const { data: parkedVehicles = [] } = useQuery({
     queryKey: ['vehicles'],
     queryFn: async () => {
-      const snapshot = await getDocs(query(retrieveVehiclesCollection()));
+      const snapshot = await safeGetDocs(query(retrieveVehiclesCollection()));
       return snapshot.docs.map((docItem) => ({
         ...docItem.data(),
         id: docItem.id,
@@ -86,7 +87,7 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
         );
 
         if (!alreadySubscriber) {
-          await addDoc(deliverSubscriberData(), {
+          await safeAddDoc(deliverSubscriberData(), {
             name: owner.name,
             documentId: owner.id,
             phone: owner.phone,
@@ -101,7 +102,7 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
         }
       }
 
-      return addDoc(deliverVehicleEntry(), {
+      return safeAddDoc(deliverVehicleEntry(), {
         ...newVehicle,
         entryTime: Date.now(),
         status: 'PARKED',
