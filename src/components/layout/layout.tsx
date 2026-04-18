@@ -26,12 +26,12 @@ export default function Layout({
         <AppSidebar profile={profile} />
         <SidebarInset>
           {/* Navbar Superior */}
-          <main className="flex h-10 shrink-0 items-center justify-between gap-2 border-b px-4 sticky top-0 bg-background/80 backdrop-blur-md z-10">
+          <main className="sticky top-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border/70 bg-background/80 px-3 backdrop-blur-md transition-all duration-300 sm:px-4">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               {/* <Separator orientation="vertical" className="mr-2 h-4" /> */}
             </div>
-            {/* Espacio para buscador o perfil rápido si se desea */}
+            {/* Espacio para buscador o perfil rÃ¡pido si se desea */}
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
@@ -55,8 +55,8 @@ export default function Layout({
             </div>
           </main>
 
-          {/* Contenido de la página */}
-          <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6">
+          {/* Contenido de la pÃ¡gina */}
+          <div className="flex-1 space-y-6 px-3 py-4 transition-all duration-300 sm:px-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
             {children}
           </div>
         </SidebarInset>

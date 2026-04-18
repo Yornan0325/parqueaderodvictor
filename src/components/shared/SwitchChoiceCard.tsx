@@ -1,22 +1,40 @@
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
-import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldTitle } from "../ui/field"
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldTitle,
+} from "../ui/field"
 
-interface SwitchChoiceCardProps {
-  isMonthly: boolean;
-  setIsMonthly: (value: boolean) => void;
-  owner: { name: string; id: string; phone: string };
-  setOwner: (owner: any) => void;
+interface OwnerInfo {
+  name: string
+  id: string
+  phone: string
 }
 
-export function SwitchChoiceCard({ isMonthly, setIsMonthly, owner, setOwner }: SwitchChoiceCardProps) {
+interface SwitchChoiceCardProps {
+  isMonthly: boolean
+  setIsMonthly: (value: boolean) => void
+  owner: OwnerInfo
+  setOwner: (owner: OwnerInfo) => void
+}
+
+export function SwitchChoiceCard({
+  isMonthly,
+  setIsMonthly,
+  owner,
+  setOwner,
+}: SwitchChoiceCardProps) {
   return (
     <div className="space-y-4">
       <FieldGroup className="w-full max-w-sm">
         <FieldLabel htmlFor="switch-share" className="cursor-pointer">
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldTitle>¿Es Cliente Mensual?</FieldTitle>
+              <FieldTitle>Es cliente mensual?</FieldTitle>
               <FieldDescription>
                 Marque para omitir el cobro por tiempo.
               </FieldDescription>
@@ -31,18 +49,17 @@ export function SwitchChoiceCard({ isMonthly, setIsMonthly, owner, setOwner }: S
         </FieldLabel>
       </FieldGroup>
 
-      {/* Formulario condicional integrado */}
       {isMonthly && (
-        <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2">
-          <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-            Información Propietario
+        <div className="space-y-4 pt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            Informacion propietario
           </p>
           <Input
             placeholder="Nombre completo"
             value={owner.name}
             onChange={(e) => setOwner({ ...owner, name: e.target.value })}
           />
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
               placeholder="Documento / NIT"
               value={owner.id}

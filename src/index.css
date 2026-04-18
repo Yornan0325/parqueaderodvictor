@@ -1,4 +1,4 @@
-/* 1. Imports de librerías (Sintaxis v4) */
+/* 1. Imports de librerÃ­as (Sintaxis v4) */
 @import "tailwindcss";
 @import "tw-animate-css";
 @import 'shadcn/tailwind.css';
@@ -82,12 +82,12 @@
   --ring: 222.2 84% 4.9%;
   --radius: 0.75rem;
 
-  --sidebar: 210 40% 98%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
+  --sidebar: 210 35% 98%;
+  --sidebar-foreground: 224 25% 17%;
+  --sidebar-primary: 221 83% 53%;
   --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
+  --sidebar-accent: 214 32% 93%;
+  --sidebar-accent-foreground: 224 25% 17%;
   --sidebar-border: var(--border);
   --sidebar-ring: 217.2 91.2% 59.8%;
 }
@@ -110,17 +110,17 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  /* TONALIDAD SUBIDA: De 8% a 14% para mayor definición */
+  /* TONALIDAD SUBIDA: De 8% a 14% para mayor definiciÃ³n */
   --border: 240 3.7% 14%;
   --input: 240 3.7% 14%;
   --ring: 212.7 26.8% 83.9%;
 
   /* Sidebar Dark Mode - Sincronizado */
-  --sidebar: 240 5.9% 10%;
+  --sidebar: 224 28% 9%;
   --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
+  --sidebar-primary: 217 91% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
+  --sidebar-accent: 225 22% 16%;
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: var(--border);
   --sidebar-ring: 217.2 91.2% 59.8%;
@@ -129,7 +129,7 @@
 /* 3. Estilos base y Uniformidad Reforzada */
 @layer base {
   * {
-    /* Opacidad aumentada al 80% para que las líneas sean más nítidas */
+    /* Opacidad aumentada al 80% para que las lÃ­neas sean mÃ¡s nÃ­tidas */
     border-color: hsl(var(--border) / 0.8);
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }

@@ -233,21 +233,21 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
   };
 
   return (
-    <Card className="p-2 border-1 border-zinc-300 mx-auto animate-in slide-in-from-bottom-4">
+    <Card className="mx-auto animate-in slide-in-from-bottom-4 border border-border/70 bg-card/80 p-2 shadow-sm backdrop-blur-sm transition-all duration-300 sm:p-3">
       <CardHeader>
         <CardTitle>Registro de Entrada</CardTitle>
         <CardDescription>Capture los datos del vehiculo y defina la tarifa.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleEntry} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Placa</label>
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Placa</label>
               <Input
                 placeholder="ABC123"
                 className={cn(
                   'text-2xl font-semibold uppercase h-14 focus:ring-2 transition-all',
-                  plateError ? 'border-red-500 focus:ring-red-500 bg-red-50/10' : 'focus:ring-zinc-900'
+                  plateError ? 'border-red-500 focus:ring-red-500 bg-red-500/5' : 'focus:ring-primary'
                 )}
                 value={plate}
                 maxLength={6}
@@ -260,56 +260,62 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
               )}
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Categoria</label>
-              <div className="grid grid-cols-5 gap-2 h-14">
+              <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Categoria</label>
+              <div className="grid grid-cols-5 gap-2 min-h-14">
                 {(Object.keys(rates) as VehicleType[]).map((vehicleType) => (
                   <Button
                     key={vehicleType}
                     type="button"
                     onClick={() => setType(vehicleType)}
                     title={vehicleType}
-                    className={`flex items-center focus:ring-2 focus:ring-zinc-900 h-14 justify-center rounded-md border transition-all ${type === vehicleType ? 'bg-zinc-900 border-zinc-900 text-white shadow-md' : ' border-zinc-200 text-zinc-400 hover:border-zinc-400'}`}
+                    aria-pressed={type === vehicleType}
+                    className={`relative flex h-14 items-center justify-center rounded-md border transition-all focus-visible:ring-2 focus-visible:ring-primary/70 ${type === vehicleType ? 'bg-primary border-primary text-primary-foreground shadow-md' : 'border-border text-muted-foreground hover:bg-accent/60 hover:text-accent-foreground'}`}
                   >
                     {vehicleType === 'AUTOMOVIL' && <Car size={24} />}
                     {vehicleType === 'MOTOCICLETA' && <Motorbike size={24} className="rotate-12" />}
                     {vehicleType === 'BICICLETA' && <Bike size={24} />}
                     {vehicleType === 'CAMION' && <Truck size={24} />}
                     {vehicleType === 'BUS' && <Bus size={24} />}
+                    {type === vehicleType && (
+                      <span className="absolute bottom-1 rounded-md bg-background/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                        {vehicleType}
+                      </span>
+                    )}
                   </Button>
                 ))}
               </div>
             </div>
           </div>
 
-          <div className="p-6 border border-zinc-200 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-col gap-4 rounded-xl border border-border/70 bg-muted/25 p-4 transition-colors sm:p-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-10 w-10 bg-zinc-800 rounded-lg flex items-center justify-center text-blue-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <DollarSign size={16} />
               </div>
               <div>
                 <CardDescription className="text-[10px] font-bold uppercase tracking-widest">
                   {isMonthly ? 'Costo Mensual' : 'Tarifa por Hora'}
                 </CardDescription>
-                <CardDescription className="text-zinc-500">Valor a aplicar</CardDescription>
+                <CardDescription className="text-muted-foreground">Valor a aplicar</CardDescription>
               </div>
             </div>
 
             <div className="flex items-center gap-2 justify-start md:justify-end">
-              <span className="text-xl font-bold text-zinc-500">$</span>
+              <span className="text-xl font-bold text-muted-foreground">$</span>
               <Input
                 type="text"
-                className="text-center text-xl md:w-30 md:text-2xl font-black outline-none max-w-40"
+                className="max-w-40 text-center text-xl font-black outline-none md:w-30 md:text-2xl"
                 value={formatCurrency(manualRate)}
                 onChange={handleRateChange}
               />
             </div>
           </div>
 
-          <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/60 p-4 text-sm text-zinc-500">
-            Cupos disponibles: <span className="font-black text-zinc-900">{Math.max(capacity - parkedVehicles.length, 0)}</span>
+          <div className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground transition-colors">
+            Cupos disponibles: <span className="font-black text-foreground">{Math.max(capacity - parkedVehicles.length, 0)}</span>
           </div>
 
-          <div className={`${isMonthly ? 'items-center border-1 border-zinc-200 rounded-xl p-6 ' : ''}`}>
+          <div className={`${isMonthly ? 'items-center rounded-xl border border-border/70 bg-muted/20 p-4 sm:p-6' : ''}`}>
             <SwitchChoiceCard
               isMonthly={isMonthly}
               setIsMonthly={setIsMonthly}
@@ -320,7 +326,7 @@ const EntryView = ({ user, onComplete }: { user: User; onComplete: () => void })
 
           <Button
             type="submit"
-            className="w-full h-12 text-lg"
+            className="h-12 w-full text-lg transition-transform duration-200 hover:scale-[1.01]"
             disabled={entryMutation.isPending}
             variant="outline"
           >

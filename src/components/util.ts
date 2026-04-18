@@ -4,15 +4,15 @@ import { db } from "@/firebase/firebase";
 export const retrieveVehiclesCollection = () => collection(db, 'parked_vehicles');
 export const retrieveSubscribersCollection = () => collection(db, 'subscribers');
 export const retrieveHistoryCollection = () => collection(db, 'history');
-export const retrieveUsersCollection = () => collection(db, 'usuario');
+export const retrieveUsersCollection = () => collection(db, 'usuarios');
 
 export const deliverVehicleEntry = () => collection(db, 'parked_vehicles');
 export const deliverSubscriberData = () => collection(db, 'subscribers');
 export const deliverHistoryEntry = () => collection(db, 'history');
-export const deliverUserData = () => collection(db, 'usuario');
+export const deliverUserData = () => collection(db, 'usuarios');
 
 export const parkingSettingsDocument = () =>
   doc(db, 'artifacts', 'public', 'data', 'settings');
 
 export const userProfileDocument = (email: string) =>
-  doc(db, 'usuario', email);
+  doc(db, 'usuarios', email);

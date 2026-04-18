@@ -13,15 +13,15 @@ const ConfigurationView = () => {
     useParkingSettings();
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <Card className="border border-zinc-200 p-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <Card className="border border-border/70 bg-card/80 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 sm:p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div>
-            <h2 className="text-2xl font-black text-zinc-900">Configuracion operativa</h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h2 className="text-2xl font-black text-foreground">Configuracion operativa</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Ajusta capacidad y tarifas base para operar el parqueadero.
             </p>
-            <p className="mt-2 text-xs text-zinc-400">
+            <p className="mt-2 text-xs text-muted-foreground">
               Estado remoto: {isRemoteReady ? 'sincronizado' : 'sincronizando...'}
             </p>
           </div>
@@ -39,20 +39,20 @@ const ConfigurationView = () => {
         </div>
       </Card>
 
-      <Card className="border border-zinc-200 p-6">
-        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Capacidad del patio</p>
+      <Card className="border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-6">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Capacidad del patio</p>
         <div className="mt-3 max-w-xs">
           <Input type="number" min={1} value={capacity} onChange={(e) => updateCapacity(Number(e.target.value))} />
         </div>
       </Card>
 
-      <Card className="border border-zinc-200 p-6">
-        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Tarifas por defecto</p>
+      <Card className="border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-6">
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tarifas por defecto</p>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           {(Object.keys(VEHICLE_RATES) as VehicleType[]).map((vehicleType) => (
-            <div key={vehicleType} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-              <p className="text-sm font-black text-zinc-900">{vehicleType}</p>
-              <p className="mt-1 text-xs text-zinc-400">Valor actual: ${formatCurrency(rates[vehicleType])}</p>
+            <div key={vehicleType} className="rounded-2xl border border-border/70 bg-muted/35 p-4 transition-colors">
+              <p className="text-sm font-black text-foreground">{vehicleType}</p>
+              <p className="mt-1 text-xs text-muted-foreground">Valor actual: ${formatCurrency(rates[vehicleType])}</p>
               <Input className="mt-3" value={rates[vehicleType]} onChange={(e) => updateRate(vehicleType, Number(e.target.value) || 0)} type="number" min={0} />
             </div>
           ))}

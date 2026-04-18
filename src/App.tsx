@@ -17,6 +17,17 @@ import RegisterPage from "./pages/sesion/RegisterPage"
 import HistoryView from "./pages/HistoryView"
 import ConfigurationView from "./pages/ConfigurationView"
 
+function AppBootLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <h1 className="text-lg font-bold text-foreground">Iniciando</h1>
+      </div>
+    </div>
+  )
+}
+
 function App() {
   useNetworkStatus()
   const [user, setUser] = useState<User | null>(null);
@@ -32,11 +43,7 @@ function App() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950">
-        <Loader2 className="animate-spin text-emerald-500" />
-      </div>
-    );
+    return <AppBootLoader />;
   }
 
   if (!user) {
@@ -50,11 +57,7 @@ function App() {
   }
 
   if (profileLoading || !profile) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-zinc-950">
-        <Loader2 className="animate-spin text-emerald-500" />
-      </div>
-    );
+    return <AppBootLoader />;
   }
 
   return (

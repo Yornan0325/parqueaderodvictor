@@ -8,7 +8,7 @@ import { userProfileDocument } from '@/components/util';
 const fallbackProfile = (user: User): UserProfile => ({
   uid: user.uid,
   email: user.email ?? '',
-  name: user.displayName ?? user.email?.split('@')[0] ?? 'Usuario',
+  name: user.displayName ?? user.email?.split('@')[0] ?? 'Usuarios',
   role: 'user',
   createdAt: new Date().toISOString(),
 });

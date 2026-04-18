@@ -69,7 +69,7 @@ const UsersView = () => {
       }
 
       await setDoc(
-        doc(db, 'usuario', email),
+        doc(db, 'usuarios', email),
         {
           ...selectedUser,
           email,
@@ -118,18 +118,18 @@ const UsersView = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin text-zinc-300" strokeWidth={1} size={40} />
+        <Loader2 className="animate-spin text-muted-foreground" strokeWidth={1} size={40} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <Card className="border border-zinc-200 p-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <Card className="border border-border/70 bg-card/70 p-4 shadow-sm backdrop-blur-sm transition-all duration-300 sm:p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-2xl font-black text-zinc-900">Usuarios</h2>
-            <p className="text-sm text-zinc-500">
+            <h2 className="text-2xl font-black text-foreground">Usuarios</h2>
+            <p className="text-sm text-muted-foreground">
               Administra nombre, correo y rol operativo de cada usuario.
             </p>
           </div>
@@ -140,32 +140,38 @@ const UsersView = () => {
         </div>
       </Card>
 
-      <Card className="border border-zinc-200">
-        <Table>
+      <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
+        <div className="overflow-x-auto">
+          <Table className="min-w-[640px]">
           <TableHeader>
-            <TableRow className="bg-zinc-50/60">
-              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-zinc-500">
+            <TableRow className="bg-muted/40">
+              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">
                 Nombre
               </TableHead>
-              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-zinc-500">
+              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">
                 Correo
               </TableHead>
-              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-zinc-500">
+              <TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">
                 Rol
               </TableHead>
-              <TableHead className="px-6 text-right text-[10px] uppercase tracking-widest text-zinc-500">
+              <TableHead className="px-6 text-right text-[10px] uppercase tracking-widest text-muted-foreground">
                 Accion
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.email}>
-                <TableCell className="px-6 font-black text-zinc-900">{user.name}</TableCell>
-                <TableCell className="px-6 text-zinc-500">{user.email}</TableCell>
-                <TableCell className="px-6 uppercase text-zinc-500">{user.role}</TableCell>
+              <TableRow key={user.email} className="transition-colors hover:bg-muted/30">
+                <TableCell className="px-6 font-black text-foreground">{user.name}</TableCell>
+                <TableCell className="px-6 text-muted-foreground">{user.email}</TableCell>
+                <TableCell className="px-6 uppercase text-muted-foreground">{user.role}</TableCell>
                 <TableCell className="px-6 text-right">
-                  <Button variant="ghost" size="icon" onClick={() => openEditor(user)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="transition-colors hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => openEditor(user)}
+                  >
                     <Pencil className="h-4 w-4" />
                   </Button>
                 </TableCell>
@@ -173,13 +179,14 @@ const UsersView = () => {
             ))}
             {users.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="px-6 py-16 text-center text-zinc-400">
-                  No hay perfiles cargados en la coleccion usuario.
+                <TableCell colSpan={4} className="px-6 py-16 text-center text-muted-foreground">
+                  No hay perfiles cargados en la coleccion usuarios.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
-        </Table>
+          </Table>
+        </div>
       </Card>
 
       <Sheet open={isEditorOpen} onOpenChange={(open) => {
