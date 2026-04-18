@@ -1,9 +1,13 @@
 // #region IMPORTS
 import {
+  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
   type User
 } from 'firebase/auth'
 import { auth } from './firebase'
+import { db } from './firebase'
+import { doc, setDoc } from 'firebase/firestore'
 
  // #endregion
 
@@ -183,16 +187,57 @@ const signOutSession = async (): Promise<AuthResponse<null>> => {
  * }
  */
 const createUserWithEmail = async ({
-  email: _email,
-  password: _password,
-  name: _name
+  email,
+  password,
+  name
 }: CreateUserParams): Promise<AuthResponse<User>> => {
-  return {
-    data: null,
-    error: {
-      code: 'auth/operation-not-allowed',
-      message:
-        'El registro publico esta deshabilitado. Solicita a un administrador la creacion de tu cuenta.'
+  try {
+    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedName = name.trim()
+
+    if (!normalizedName) {
+      return {
+        data: null,
+        error: {
+          code: 'validation/name-required',
+          message: 'El nombre es obligatorio'
+        }
+      }
+    }
+
+    const credential = await createUserWithEmailAndPassword(
+      auth,
+      normalizedEmail,
+      password
+    )
+
+    await updateProfile(credential.user, { displayName: normalizedName })
+
+    const nowIso = new Date().toISOString()
+
+    await setDoc(
+      doc(db, 'usuarios', normalizedEmail),
+      {
+        uid: credential.user.uid,
+        email: normalizedEmail,
+        correo: normalizedEmail,
+        name: normalizedName,
+        nombre: normalizedName,
+        role: 'user',
+        rol: 'user',
+        createdAt: nowIso,
+        creadoEn: nowIso,
+        updatedAt: nowIso,
+        actualizadoEn: nowIso
+      },
+      { merge: true }
+    )
+
+    return { data: credential.user, error: null }
+  } catch (error) {
+    return {
+      data: null,
+      error: createAuthError(error)
     }
   }
 }

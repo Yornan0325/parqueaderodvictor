@@ -13,7 +13,6 @@
   type DocumentData,
   type DocumentReference,
   type Query,
-  type SetOptions,
 } from "firebase/firestore"
 
 import { db } from "@/firebase/firebase"
@@ -83,9 +82,15 @@ const enqueueOperation = (operation: OfflineOperation) => {
 
 const splitPath = (path: string) => path.split("/").filter(Boolean)
 
-const toDocumentRef = (path: string) => doc(db, ...splitPath(path))
-const toCollectionRef = (path: string) =>
-  collection(db, ...splitPath(path)) as CollectionReference<DocumentData>
+const toDocumentRef = (path: string) => {
+  const segments = splitPath(path)
+  return doc(db, segments[0], ...segments.slice(1))
+}
+
+const toCollectionRef = (path: string) => {
+  const segments = splitPath(path)
+  return collection(db, segments[0], ...segments.slice(1)) as CollectionReference<DocumentData>
+}
 
 const replayOperation = async (operation: OfflineOperation) => {
   if (operation.kind === "add") {
@@ -192,10 +197,14 @@ export const safeAddDoc = async <T extends DocumentData>(
 export const safeSetDoc = async <T extends DocumentData>(
   docRef: DocumentReference<T>,
   data: Partial<T>,
-  options?: SetOptions
+  options?: any
 ) => {
   try {
-    await setDoc(docRef, data as T, options)
+    if (options) {
+      await setDoc(docRef, data as T, options)
+    } else {
+      await setDoc(docRef, data as T)
+    }
   } catch (error) {
     if (!isOfflineError(error)) throw error
 

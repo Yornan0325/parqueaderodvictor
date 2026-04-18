@@ -2,56 +2,18 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
-    }
 
-    function currentUserProfile() {
-      return get(/databases/$(database)/documents/usuarios/$(request.auth.token.email));
-    }
-
-    function currentUserRole() {
-      return currentUserProfile().data.role != null
-        ? currentUserProfile().data.role
-        : currentUserProfile().data.rol;
-    }
-
-    function hasRole(role) {
-      return signedIn()
-        && currentUserProfile().exists()
-        && currentUserRole() == role;
-    }
-
-    function adminOrEmployee() {
-      return hasRole('admin') || hasRole('employee');
-    }
-
-    match /parked_vehicles/{docId} {
-      allow read: if adminOrEmployee();
-      allow create: if adminOrEmployee();
-      allow update: if adminOrEmployee();
-      allow delete: if hasRole('admin');
-    }
-
-    match /subscribers/{docId} {
-      allow read: if adminOrEmployee();
-      allow create, update, delete: if hasRole('admin');
-    }
-
-    match /history/{docId} {
-      allow read: if hasRole('admin');
-      allow create: if adminOrEmployee();
-      allow update, delete: if false;
-    }
-
-    match /usuarios/{email} {
-      allow read: if signedIn();
-      allow write: if hasRole('admin');
-    }
-
-    match /artifacts/public/data/settings {
-      allow read: if signedIn();
-      allow write: if hasRole('admin');
+    // This rule allows anyone with your Firestore database reference to view, edit,
+    // and delete all data in your Firestore database. It is useful for getting
+    // started, but it is configured to expire after 30 days because it
+    // leaves your app open to attackers. At that time, all client
+    // requests to your Firestore database will be denied.
+    //
+    // Make sure to write security rules for your app before that time, or else
+    // all client requests to your Firestore database will be denied until you Update
+    // your rules
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2026, 5, 18);
     }
   }
 }
