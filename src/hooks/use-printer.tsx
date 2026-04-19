@@ -30,7 +30,9 @@ export const PrinterProvider = ({ children }: { children: ReactNode }) => {
         optionalServices: [
           '0000ff00-0000-1000-8000-00805f9b34fb', 
           '000018f0-0000-1000-8000-00805f9b34fb',
-          '49535343-fe7d-4ae5-8fa9-9fafd205e455'
+          '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+          '0000fee7-0000-1000-8000-00805f9b34fb',
+          'e7810a71-73ae-499d-8c15-faa9aef0c3f2'
         ]
       });
 
@@ -84,15 +86,34 @@ export const PrinterProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Las impresoras térmicas suelen tener un límite de buffer, enviamos en trozos si es necesario
-      const chunkSize = 512;
+      // Usar tamaño de bloque (chunk) mas pequeño para mayor compatibilidad BLE
+      const chunkSize = 100;
       for (let i = 0; i < data.length; i += chunkSize) {
         const chunk = data.slice(i, i + chunkSize);
-        await characteristic.writeValue(chunk);
+        
+        // Algunos dispositivos genéricos exigen writeWithoutResponse
+        if (characteristic.properties.writeWithoutResponse && !characteristic.properties.write) {
+            await characteristic.writeValueWithoutResponse(chunk);
+        } else {
+            try {
+               await characteristic.writeValue(chunk);
+            } catch (err) {
+               // Fallback por si la propiedad write tira error
+               if (characteristic.properties.writeWithoutResponse) {
+                 await characteristic.writeValueWithoutResponse(chunk);
+               } else {
+                 throw err;
+               }
+            }
+        }
+        
+        // Pausa breve para evitar desborde de buffer en impresoras pequeñas
+        await new Promise(r => setTimeout(r, 20));
       }
+      toast.success('Impresión enviada');
     } catch (error: any) {
       console.error('Error de impresión:', error);
-      toast.error('Error al enviar datos a la impresora');
+      toast.error(`Error al imprimir: ${error.message || 'Desconocido'}`);
     }
   }, [characteristic]);
 
