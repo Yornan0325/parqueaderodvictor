@@ -182,7 +182,7 @@ const DashboardView = ({ user }: { user: User }) => {
           <div className="relative w-full max-w-sm"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder="Buscar por placa..." className="pl-9" value={search} onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} /></div>
         </div>
         <div className="overflow-x-auto border-t border-border/60">
-          <table className="w-full min-w-[840px] text-sm">
+          <table className="w-full text-sm">
             <thead><tr className="border-b border-border/60 bg-muted/30 text-muted-foreground"><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Vehiculo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Ingreso / Tiempo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Pago / Tarifa</th><th className="h-10 px-6 text-right font-medium uppercase text-[10px] tracking-widest">Accion</th></tr></thead>
             <tbody className="divide-y divide-border/60">
               {filtered.map(vehicle => {
@@ -200,14 +200,38 @@ const DashboardView = ({ user }: { user: User }) => {
       </Card>
 
       <Sheet open={isExitModalOpen} onOpenChange={setIsExitModalOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl border-none shadow-2xl bg-zinc-950 text-white p-0">
+        <SheetContent side="bottom" className="rounded-t-3xl border-none shadow-2xl bg-zinc-800 text-white p-0">
           {selectedVehicle && (() => {
             const diff = now - selectedVehicle.entryTime;
             const hrs = Math.floor(diff / 3600000);
             const mins = Math.floor((diff % 3600000) / 60000);
             const billedHrs = Math.max(1, Math.ceil(diff / 3600000));
             const total = selectedVehicle.isMonthly ? 0 : billedHrs * selectedVehicle.appliedRate;
-            return <div className="flex flex-col"><div className="px-6 pt-6 pb-4 border-b border-zinc-800/60"><div className="flex items-center justify-between"><div><p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1">Finalizando servicio</p><h2 className="text-2xl font-black text-white tracking-tight">{selectedVehicle.plate}</h2><p className="text-xs text-zinc-500 font-medium mt-0.5">{selectedVehicle.type}</p></div><div className="text-right"><p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-1">Tiempo</p><p className="text-2xl font-black text-white">{hrs}h {mins}m</p><p className="text-[10px] text-zinc-600 font-medium">Ingreso: {new Date(selectedVehicle.entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p></div></div></div><div className="px-6 py-5 border-b border-zinc-800/60 flex items-center justify-between"><p className="text-sm font-bold text-zinc-500">Total a cobrar</p><p className="text-4xl font-black text-emerald-400 tracking-tight">${formatCurrency(total)}</p></div><div className="px-6 py-5 border-b border-zinc-800/60"><p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-3">Forma de Pago</p><div className="grid grid-cols-2 gap-3"><button type="button" onClick={() => setPaymentMethod('EFECTIVO')} className={`h-14 rounded-2xl text-sm font-bold border transition-all ${paymentMethod === 'EFECTIVO' ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'}`}>Efectivo</button><button type="button" onClick={() => setPaymentMethod('TRANSFERENCIA')} className={`h-14 rounded-2xl text-sm font-bold border transition-all ${paymentMethod === 'TRANSFERENCIA' ? 'bg-white text-zinc-900 border-white shadow-lg' : 'bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'}`}>Transferencia</button></div></div><div className="px-6 py-5 flex flex-col gap-2"><Button className="h-14 text-base font-black rounded-2xl bg-emerald-500 hover:bg-emerald-400 border-none shadow-lg shadow-emerald-500/20 text-white tracking-wide" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate({ vehicle: selectedVehicle, method: paymentMethod, amount: total })}>{deleteMutation.isPending ? <Loader2 className="animate-spin" /> : "REGISTRAR SALIDA"}</Button><Button variant="ghost" className="h-10 flex items-center justify-center gap-2 text-zinc-700 hover:text-blue-400 hover:bg-zinc-900 font-bold text-[10px] uppercase tracking-widest rounded-2xl" onClick={() => handlePrint(selectedVehicle, total, paymentMethod)}><Bluetooth className="h-3.5 w-3.5" />Imprimir Tiquete Manual</Button></div></div>;
+            return <div className="flex flex-col">
+              <div className="px-8 pt-6 pb-4 border-b">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[12px] font-bold uppercase tracking-widest mb-1">Finalizando servicio</p>
+                    <h2 className="text-2xl font-black tracking-tight">{selectedVehicle.plate}</h2>
+                    <p className="text-xs font-medium mt-0.5">{selectedVehicle.type}</p>
+                  </div><div className="text-right"><p className="text-[12px] font-bold uppercase tracking-widest mb-1">Tiempo</p>
+                    <p className="text-2xl font-black text-white">{hrs}h {mins}m</p>
+                    <p className="text-[12px] font-medium">Ingreso: {new Date(selectedVehicle.entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</p>
+                  </div></div></div><div className="px-6 py-5 border-b border-zinc-800/60 flex items-center justify-between"><p className="text-sm font-bold  ">Total a cobrar</p>
+                <p className="text-4xl font-black   tracking-tight">${formatCurrency(total)}</p>
+              </div><div className="px-6 py-5 border-b border-zinc-800/60"><p className="text-[12px] font-bold   uppercase tracking-widest mb-3">Forma de Pago</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setPaymentMethod('EFECTIVO')} className={`h-14 rounded-2xl   text-sm font-bold border transition-all ${paymentMethod === 'EFECTIVO' ? ' border-white shadow-lg' : 'bg-transparent border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'}`}>Efectivo</button>
+                  <button type="button" onClick={() => setPaymentMethod('TRANSFERENCIA')} className={`h-14 rounded-2xl text-sm font-bold border transition-all ${paymentMethod === 'TRANSFERENCIA' ? ' border-white shadow-lg' : 'bg-transparent  border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'}`}>Transferencia</button>
+                </div></div><div className="px-6 py-5 flex flex-col gap-2">
+                <Button variant="ghost" className="flex h-10  border-amber-700 items-center justify-center gap-2   hover:text-blue-400 hover:bg-zinc-900 font-bold text-[12px] uppercase tracking-widest rounded-2xl" onClick={() => handlePrint(selectedVehicle, total, paymentMethod)}>
+                  <Bluetooth className="h-5 w-5" />
+                  Imprimir Tiquete Manual
+                </Button>
+
+                <Button className="h-14 w-2xs text-base font-black rounded-2xl   hover:border-2  border-amber-800    tracking-wide" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate({ vehicle: selectedVehicle, method: paymentMethod, amount: total })}>{deleteMutation.isPending ? <Loader2 className="animate-spin" /> : "REGISTRAR SALIDA"}</Button>
+              </div>
+            </div>;
           })()}
         </SheetContent>
       </Sheet>
