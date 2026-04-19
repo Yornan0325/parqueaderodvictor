@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { useQuery } from '@tanstack/react-query';
 import { orderBy, query } from 'firebase/firestore';
-import { Clock3, Loader2, Search, Printer } from 'lucide-react';
+import { Clock3, Loader2, Search, Printer, DollarSign, Wallet, ArrowRightLeft } from 'lucide-react';
 
 import { retrieveHistoryCollection } from '@/components/util';
 import type { HistoryEntry } from '@/components/types';
@@ -70,24 +70,69 @@ const HistoryView = ({ user }: { user: User }) => {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="grid gap-4 md:grid-cols-[1fr_auto]">
-        <Card className="border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-5"><p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recaudo visible</p><p className="mt-2 text-3xl font-black text-foreground">${formatCurrency(totalCollected)}</p><p className="mt-1 text-sm text-muted-foreground">Basado en los registros filtrados del historial.</p></Card>
-        <Card className="flex items-center gap-3 border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-5"><div className="rounded-2xl bg-primary p-3 text-primary-foreground"><Clock3 className="h-5 w-5" /></div><div><p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Servicios</p><p className="text-2xl font-black text-foreground">{filteredHistory.length}</p></div></Card>
+      <div className="grid gap-2 sm:gap-4 md:grid-cols-[1fr_auto]">
+        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
+          <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Recaudo visible</span>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+            <div className="text-3xl font-black text-foreground">${formatCurrency(totalCollected)}</div>
+            <span className="text-[10px] sm:text-xs text-muted-foreground block">Basado en registros filtrados.</span>
+          </div>
+        </Card>
+        
+        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300 min-w-[140px] sm:min-w-[180px]">
+          <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Servicios</span>
+            <Clock3 className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+            <div className="text-3xl font-black text-foreground">{filteredHistory.length}</div>
+            <span className="text-[10px] sm:text-xs text-muted-foreground block">Despachados.</span>
+          </div>
+        </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-5"><p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Efectivo</p><p className="mt-2 text-2xl font-black text-foreground">${formatCurrency(paymentSummary.efectivo)}</p></Card>
-        <Card className="border border-border/70 bg-card/80 p-4 shadow-sm transition-all duration-300 sm:p-5"><p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Transferencia</p><p className="mt-2 text-2xl font-black text-foreground">${formatCurrency(paymentSummary.transferencia)}</p></Card>
+      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
+          <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Efectivo</span>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+            <div className="text-xl sm:text-2xl font-black text-foreground">${formatCurrency(paymentSummary.efectivo)}</div>
+          </div>
+        </Card>
+        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
+          <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Transferencia</span>
+            <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
+          </div>
+          <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+            <div className="text-xl sm:text-2xl font-black text-foreground">${formatCurrency(paymentSummary.transferencia)}</div>
+          </div>
+        </Card>
       </div>
 
       <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
-        <div className="flex flex-col gap-4 border-b border-border/60 p-4 sm:p-6 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-4 border-b border-border/60 p-4 sm:p-6 md:flex-row md:items-start md:justify-between">
           <div><h2 className="text-2xl font-black text-foreground">Historial</h2><p className="text-sm text-muted-foreground">Consulta las salidas registradas y el recaudo asociado.</p></div>
-          <div className="grid w-full gap-3 md:max-w-3xl md:grid-cols-4">
-            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" placeholder="Buscar por placa..." /></div>
-            <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-            <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
-            <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value as 'ALL' | 'EFECTIVO' | 'TRANSFERENCIA')} className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors"><option value="ALL">Todos los pagos</option><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option></select>
+          <div className="grid w-full gap-3 md:max-w-xl lg:max-w-2xl">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 h-9" placeholder="Buscar por placa..." /></div>
+              <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value as 'ALL' | 'EFECTIVO' | 'TRANSFERENCIA')} className="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors"><option value="ALL">Todos los pagos</option><option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option></select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground pl-1">Desde</span>
+                <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="h-9 text-xs sm:text-sm" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold uppercase text-muted-foreground pl-1">Hasta</span>
+                <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="h-9 text-xs sm:text-sm" />
+              </div>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
