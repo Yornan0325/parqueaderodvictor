@@ -78,7 +78,6 @@ const UsersView = () => {
           name: form.name.trim(),
           nombre: form.name.trim(),
           role: form.role,
-          rol: form.role,
           updatedAt: new Date().toISOString(),
           actualizadoEn: new Date().toISOString(),
         },

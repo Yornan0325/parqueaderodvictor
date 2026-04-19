@@ -12,7 +12,7 @@ export const deliverHistoryEntry = () => collection(db, 'history');
 export const deliverUserData = () => collection(db, 'usuarios');
 
 export const parkingSettingsDocument = () =>
-  doc(db, 'artifacts', 'public', 'data', 'settings');
+  doc(db, 'settings', 'capacity');
 
 export const userProfileDocument = (email: string) =>
   doc(db, 'usuarios', email);
