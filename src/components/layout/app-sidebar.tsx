@@ -38,7 +38,11 @@ export function AppSidebar({ profile }: { profile: UserProfile }) {
   )
 
   return (
-    <Sidebar variant="sidebar" collapsible="icon">
+    <Sidebar
+      variant="sidebar"
+      collapsible="icon"
+      className="bg-sidebar border-r border-sidebar-border/80 shadow-md"
+    >
       <SidebarHeader className="h-12 flex items-center justify-center border-b border-sidebar-border/80 px-4 bg-sidebar">
         <div className="flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-black/20 transition-all group-hover:scale-[1.03]">
@@ -52,7 +56,7 @@ export function AppSidebar({ profile }: { profile: UserProfile }) {
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-sidebar">
         <SidebarGroup>
           <SidebarGroupLabel className="px-4 pb-2 pt-4 text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/60 font-extrabold">
             Control
