@@ -4,6 +4,10 @@ import './index.css'
 import App from './App.tsx'
 
 import { BrowserRouter } from 'react-router-dom'
+import { registerSW } from 'virtual:pwa-register'
+
+// Registramos el service worker para habilitar el modo offline
+registerSW({ immediate: true })
 import { ThemeProvider } from './components/theme-provider.tsx'
 
 import { Toaster } from 'sonner'
