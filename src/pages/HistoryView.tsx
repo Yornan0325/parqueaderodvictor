@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react';
 import type { User } from 'firebase/auth';
 import { useQuery } from '@tanstack/react-query';
 import { orderBy, query } from 'firebase/firestore';
-import { Clock3, Loader2, Search } from 'lucide-react';
+import { Clock3, Loader2, Search, Printer } from 'lucide-react';
 
 import { retrieveHistoryCollection } from '@/components/util';
 import type { HistoryEntry } from '@/components/types';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -18,8 +19,19 @@ import {
 } from '@/components/ui/table';
 import { formatCurrency } from '@/lib/formatters';
 import { safeGetDocs } from '@/lib/firestore-safe';
+import { usePrinter } from '@/hooks/use-printer';
+import { generateExitTicket } from '@/lib/receipt-utils';
+
+const getDurationStr = (entryTime: number, exitTime: number) => {
+  const diff = exitTime - entryTime;
+  const totalMins = Math.floor(diff / 60000);
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+};
 
 const HistoryView = ({ user }: { user: User }) => {
+  const { print } = usePrinter();
   const [search, setSearch] = useState('');
   const [paymentFilter, setPaymentFilter] = useState<'ALL' | 'EFECTIVO' | 'TRANSFERENCIA'>('ALL');
   const [fromDate, setFromDate] = useState('');
@@ -51,6 +63,11 @@ const HistoryView = ({ user }: { user: User }) => {
 
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-muted-foreground" strokeWidth={1} size={40} /></div>;
 
+  const handleReprint = (entry: HistoryEntry) => {
+    const ticketData = generateExitTicket(entry as any, entry.exitTime, Number(entry.totalPaid || 0), entry.paymentMethod || 'EFECTIVO');
+    print(ticketData);
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="grid gap-4 md:grid-cols-[1fr_auto]">
@@ -75,10 +92,10 @@ const HistoryView = ({ user }: { user: User }) => {
         </div>
         <div className="overflow-x-auto">
           <Table className="min-w-[780px]">
-          <TableHeader><TableRow className="bg-muted/40"><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Placa</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Entrada</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Salida</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Pago</TableHead><TableHead className="px-6 text-right text-[10px] uppercase tracking-widest text-muted-foreground">Total</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow className="bg-muted/40"><TableHead className="px-6 text-left text-[10px] uppercase tracking-widest text-muted-foreground w-14">Accion</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Placa</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Tipo</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Entrada</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Salida</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Tiempo</TableHead><TableHead className="px-6 text-[10px] uppercase tracking-widest text-muted-foreground">Pago</TableHead><TableHead className="px-6 text-right text-[10px] uppercase tracking-widest text-muted-foreground">Total</TableHead></TableRow></TableHeader>
           <TableBody>
-            {filteredHistory.map((entry) => <TableRow key={entry.id} className="transition-colors hover:bg-muted/25"><TableCell className="px-6 font-black text-foreground">{entry.plate}</TableCell><TableCell className="px-6 text-muted-foreground">{new Date(entry.entryTime).toLocaleString()}</TableCell><TableCell className="px-6 text-muted-foreground">{new Date(entry.exitTime).toLocaleString()}</TableCell><TableCell className="px-6 text-muted-foreground">{entry.paymentMethod}</TableCell><TableCell className="px-6 text-right font-black text-foreground">${formatCurrency(Number(entry.totalPaid || 0))}</TableCell></TableRow>)}
-            {filteredHistory.length === 0 && <TableRow><TableCell colSpan={5} className="px-6 py-16 text-center text-muted-foreground">No hay registros en el historial para este filtro.</TableCell></TableRow>}
+            {filteredHistory.map((entry) => <TableRow key={entry.id} className="transition-colors hover:bg-muted/25"><TableCell className="px-6 text-left"><Button variant="ghost" size="icon" onClick={() => handleReprint(entry)} className="hover:bg-accent/40"><Printer className="h-4 w-4 text-muted-foreground hover:text-blue-400" /></Button></TableCell><TableCell className="px-6 font-black text-foreground">{entry.plate}</TableCell><TableCell className="px-6 text-[11px] font-bold text-muted-foreground uppercase">{entry.type || 'N/A'}</TableCell><TableCell className="px-6 text-muted-foreground">{new Date(entry.entryTime).toLocaleString()}</TableCell><TableCell className="px-6 text-muted-foreground">{new Date(entry.exitTime).toLocaleString()}</TableCell><TableCell className="px-6 text-muted-foreground font-medium">{getDurationStr(entry.entryTime, entry.exitTime)}</TableCell><TableCell className="px-6 text-muted-foreground">{entry.paymentMethod}</TableCell><TableCell className="px-6 text-right font-black text-foreground">${formatCurrency(Number(entry.totalPaid || 0))}</TableCell></TableRow>)}
+            {filteredHistory.length === 0 && <TableRow><TableCell colSpan={8} className="px-6 py-16 text-center text-muted-foreground">No hay registros en el historial para este filtro.</TableCell></TableRow>}
           </TableBody>
           </Table>
         </div>

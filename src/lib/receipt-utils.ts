@@ -15,7 +15,7 @@ const formatDate = (date: number | string) => {
 
 export const generateEntryTicket = (vehicle: ParkedVehicle) => {
   const encoder = new ReceiptPrinterEncoder();
-  
+
   return encoder
     .initialize()
     .codepage('cp858')
@@ -26,7 +26,7 @@ export const generateEntryTicket = (vehicle: ParkedVehicle) => {
     .size('normal')
     .text('PARQUEADERO')
     .newline()
-    .text('--------------------------------')
+    .text('------------------------')
     .newline()
     .align('left')
     .text(`FECHA: ${formatDate(Date.now())}`)
@@ -41,7 +41,7 @@ export const generateEntryTicket = (vehicle: ParkedVehicle) => {
     .newline()
     .newline()
     .align('center')
-    .text('--------------------------------')
+    .text('------------------------')
     .newline()
     .text('Gracias por su visita')
     .newline()
@@ -54,42 +54,55 @@ export const generateEntryTicket = (vehicle: ParkedVehicle) => {
 export const generateExitTicket = (vehicle: ParkedVehicle, exitTime: number, total: number, paymentMethod: string) => {
   const encoder = new ReceiptPrinterEncoder();
   const diff = exitTime - vehicle.entryTime;
-  const hrs = Math.ceil(diff / 3600000);
+  const totalMins = Math.floor(diff / 60000);
+  const hrs = Math.floor(totalMins / 60);
+  const mins = totalMins % 60;
+  const timeStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
 
   return encoder
     .initialize()
     .codepage('cp858')
     .align('center')
     .size('double')
+    .text("PARQUEADERO")
+    .newline()
     .text("D'VICTOR")
     .newline()
     .size('normal')
-    .text('RECIBO DE PAGO')
+    .text('NIT: 1083907722-1')
     .newline()
-    .text('--------------------------------')
+    .text('Seguridad y confianza')
+    .newline()
+    .align('center')
+    .text('-----------------------')
     .newline()
     .align('left')
+    .text(`PLACA:   ${vehicle.plate}`)
+    .newline()
+    .text(`TIPO:    ${vehicle.type}`)
+    .newline()
     .text(`INGRESO: ${formatDate(vehicle.entryTime)}`)
     .newline()
     .text(`SALIDA:  ${formatDate(exitTime)}`)
     .newline()
-    .text(`TIEMPO:  ${hrs}h`)
-    .newline()
-    .text(`PLACA:   ${vehicle.plate}`)
+    .text(`TIEMPO:  ${timeStr}`)
     .newline()
     .text(`PAGO:    ${paymentMethod}`)
     .newline()
+    .text('--------------------------------')
     .newline()
-    .align('right')
+    // .align('right')
     .size('double')
     .text(`TOTAL: $${formatCurrency(total)}`)
     .newline()
-    .size('normal')
-    .align('center')
-    .newline()
+    // .size('normal')
+    // .align('center')
     .text('--------------------------------')
     .newline()
-    .text('Gracias por su visita')
+    .text('¡Gracias por su visita!')
+    .newline()
+    .text('Conserve este tiquete')
+    .newline()
     .newline()
     .newline()
     .newline()

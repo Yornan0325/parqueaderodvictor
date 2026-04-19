@@ -23,6 +23,9 @@ export const VEHICLE_RATES: Record<VehicleType, number> = {
 
 export interface ParkingSettings {
   capacity: number;
+  capacityAutos?: number;
+  capacityMotos?: number;
+  capacityBicis?: number;
   rates: Record<VehicleType, number>;
 }
 

@@ -10,6 +10,9 @@ const DEFAULT_CAPACITY = 50;
 
 const defaultSettings: ParkingSettings = {
   capacity: DEFAULT_CAPACITY,
+  capacityAutos: 20,
+  capacityMotos: 20,
+  capacityBicis: 10,
   rates: VEHICLE_RATES,
 };
 
@@ -18,6 +21,9 @@ const normalizeSettings = (incoming?: Partial<ParkingSettings>): ParkingSettings
     typeof incoming?.capacity === 'number' && incoming.capacity > 0
       ? incoming.capacity
       : DEFAULT_CAPACITY,
+  capacityAutos: typeof incoming?.capacityAutos === 'number' && incoming.capacityAutos > 0 ? incoming.capacityAutos : 20,
+  capacityMotos: typeof incoming?.capacityMotos === 'number' && incoming.capacityMotos > 0 ? incoming.capacityMotos : 20,
+  capacityBicis: typeof incoming?.capacityBicis === 'number' && incoming.capacityBicis > 0 ? incoming.capacityBicis : 10,
   rates: {
     ...VEHICLE_RATES,
     ...incoming?.rates,
@@ -98,6 +104,18 @@ export const useParkingSettings = () => {
     });
   };
 
+  const updateCapacityAutos = (capacity: number) => {
+    void persistSettings({ ...settings, capacityAutos: Math.max(1, capacity) });
+  };
+
+  const updateCapacityMotos = (capacity: number) => {
+    void persistSettings({ ...settings, capacityMotos: Math.max(1, capacity) });
+  };
+
+  const updateCapacityBicis = (capacity: number) => {
+    void persistSettings({ ...settings, capacityBicis: Math.max(1, capacity) });
+  };
+
   const updateRate = (vehicleType: VehicleType, rate: number) => {
     void persistSettings({
       ...settings,
@@ -115,9 +133,15 @@ export const useParkingSettings = () => {
   return {
     settings,
     capacity: settings.capacity,
+    capacityAutos: settings.capacityAutos || 20,
+    capacityMotos: settings.capacityMotos || 20,
+    capacityBicis: settings.capacityBicis || 10,
     rates: settings.rates,
     isRemoteReady,
     updateCapacity,
+    updateCapacityAutos,
+    updateCapacityMotos,
+    updateCapacityBicis,
     updateRate,
     resetSettings,
   };

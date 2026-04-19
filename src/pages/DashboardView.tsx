@@ -19,6 +19,54 @@ import { useParkingSettings } from "@/hooks/use-parking-settings";
 import { toast } from "sonner";
 import { safeAddDoc, safeDeleteDoc, safeGetDocs } from "@/lib/firestore-safe";
 
+const CapacityCard = ({ 
+  title, 
+  icon: Icon, 
+  count, 
+  capacity, 
+  subtitle, 
+  onSave 
+}: { 
+  title: string; 
+  icon: any; 
+  count: number; 
+  capacity: number; 
+  subtitle: string; 
+  onSave: (val: number) => void;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [inputVal, setInputVal] = useState(String(capacity));
+  
+  const handleSave = () => {
+    const val = parseInt(inputVal, 10);
+    if (!isNaN(val) && val > 0) onSave(val);
+    setEditing(false);
+  };
+
+  return (
+    <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
+      <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</span>
+        <div className="flex items-center gap-2">
+           <button onClick={() => { setEditing(true); setInputVal(String(capacity)); }} className="text-muted-foreground hover:text-foreground"><Pencil className="h-3 w-3" /></button>
+           <Icon className="h-4 w-4 text-muted-foreground" />
+        </div>
+      </div>
+      <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+        {editing ? (
+            <div className="flex items-center gap-2 mt-1">
+              <input type="number" autoFocus className="w-16 border-b-2 border-foreground bg-transparent text-xl font-black text-foreground outline-none" value={inputVal} onChange={(e) => setInputVal(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') setEditing(false); }} />
+              <button className="text-[9px] font-black text-emerald-600 uppercase tracking-wider" onClick={handleSave}>Guardar</button>
+            </div>
+        ) : (
+            <div className="text-2xl font-black leading-none sm:text-3xl">{count} <span className="text-xs font-medium text-muted-foreground">/ {capacity}</span></div>
+        )}
+        <span className="text-[9px] mt-1 block font-bold uppercase tracking-wider text-muted-foreground">{subtitle}</span>
+      </div>
+    </Card>
+  );
+};
+
 const DashboardView = ({ user }: { user: User }) => {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -27,7 +75,7 @@ const DashboardView = ({ user }: { user: User }) => {
   const [selectedVehicle, setSelectedVehicle] = useState<ParkedVehicle | null>(null);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'EFECTIVO' | 'TRANSFERENCIA'>('EFECTIVO');
-  const { capacity, updateCapacity } = useParkingSettings();
+  const { capacity, capacityAutos, capacityMotos, capacityBicis, updateCapacity, updateCapacityAutos, updateCapacityMotos, updateCapacityBicis } = useParkingSettings();
   const [editingCapacity, setEditingCapacity] = useState(false);
   const [capacityInput, setCapacityInput] = useState('');
 
@@ -91,82 +139,49 @@ const DashboardView = ({ user }: { user: User }) => {
     (selectedType === 'ALL' || vehicle.type === selectedType)
   );
 
-  const saveCapacity = () => {
-    updateCapacity(Number(capacityInput));
-    setEditingCapacity(false);
-  };
+  const globalCapacity = capacityAutos + capacityMotos + capacityBicis;
 
   if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-muted-foreground" /></div>;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="col-span-1 border border-border/70 bg-card/80 shadow-sm transition-all duration-300 sm:col-span-2 lg:col-span-1">
-          <div className="flex flex-row items-center justify-between p-3 sm:p-4 pb-1">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <Card className="col-span-2 border border-border/70 bg-card/80 shadow-sm transition-all duration-300 sm:col-span-1">
+          <div className="flex flex-row items-center justify-between px-2 pt-2 pb-0 sm:px-3 sm:pt-3">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ocupacion</span>
-            <button
-              onClick={() => {
-                setEditingCapacity(true);
-                setCapacityInput(String(capacity));
-              }}
-              title="Editar capacidad"
-              className="text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
           </div>
-          <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-            {editingCapacity ? (
-              <div className="flex items-center gap-2 mt-1">
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    autoFocus
-                    className="w-20 border-b-2 border-foreground bg-transparent text-xl font-black text-foreground outline-none"
-                    value={capacityInput}
-                    onChange={(e) => setCapacityInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        saveCapacity();
-                      }
-                      if (e.key === 'Escape') setEditingCapacity(false);
-                    }}
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      className="text-[9px] font-black text-emerald-600 uppercase tracking-wider"
-                      onClick={saveCapacity}
-                    >
-                      <p className="text-sm font-bold text-muted-foreground">Guardar</p>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-2xl sm:text-3xl font-black leading-none">
-                {stats.total} <span className="text-xs font-medium text-muted-foreground">/ {capacity}</span>
-              </div>
-            )}
-            <Progress value={Math.min((stats.total / capacity) * 100, 100)} className={cn("w-full mt-2", "**:data-[slot=progress-indicator]:bg-sky-400", "**:data-[slot=progress-track]:bg-sky-400/10")} />
+          <div className="px-2 pb-2 sm:px-3 sm:pb-3">
+            <div className="text-2xl sm:text-3xl font-black leading-none">
+              {stats.total} <span className="text-xs font-medium text-muted-foreground">/ {globalCapacity}</span>
+            </div>
+            <Progress value={Math.min((stats.total / globalCapacity) * 100, 100)} className={cn("w-full mt-2 h-1.5", "**:data-[slot=progress-indicator]:bg-sky-400", "**:data-[slot=progress-track]:bg-sky-400/10")} />
           </div>
         </Card>
 
-        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
-          <div className="flex flex-row items-center justify-between p-3 pb-1 sm:p-4"><span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Autos</span><Car className="h-5 w-5 text-muted-foreground" /></div>
-          <div className="px-3 pb-3 sm:px-4 sm:pb-4"><div className="text-2xl font-black leading-none sm:text-3xl">{stats.counts['AUTOMOVIL'] || 0}</div><span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Automoviles</span></div>
-        </Card>
-        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
-          <div className="flex flex-row items-center justify-between p-3 pb-1 sm:p-4"><span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Motos</span><Bike className="h-5 w-5 rotate-12 text-muted-foreground" /></div>
-          <div className="px-3 pb-3 sm:px-4 sm:pb-4"><div className="text-2xl font-black leading-none sm:text-3xl">{stats.counts['MOTOCICLETA'] || 0}</div><span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Motocicletas</span></div>
-        </Card>
-        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
-          <div className="flex flex-row items-center justify-between p-3 pb-1 sm:p-4"><span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Bicis</span><Bike className="h-5 w-5 text-muted-foreground" /></div>
-          <div className="px-3 pb-3 sm:px-4 sm:pb-4"><div className="text-2xl font-black leading-none sm:text-3xl">{stats.counts['BICICLETA'] || 0}</div><span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Bicicletas</span></div>
-        </Card>
-        <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
-          <div className="flex flex-row items-center justify-between p-3 pb-1 sm:p-4"><span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pesados</span><Truck className="h-5 w-5 text-muted-foreground" /></div>
-          <div className="px-3 pb-3 sm:px-4 sm:pb-4"><div className="text-2xl font-black leading-none sm:text-3xl">{(stats.counts['BUS'] || 0) + (stats.counts['CAMION'] || 0)}</div><span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Bus / Camion</span></div>
-        </Card>
+        <CapacityCard
+           title="Autos y Pesados"
+           icon={Car}
+           count={(stats.counts['AUTOMOVIL'] || 0) + (stats.counts['BUS'] || 0) + (stats.counts['CAMION'] || 0)}
+           capacity={capacityAutos}
+           subtitle="Automoviles, Buses, Camiones"
+           onSave={updateCapacityAutos}
+        />
+        <CapacityCard
+           title="Motos"
+           icon={(props: any) => <Bike {...props} className={cn(props.className, "rotate-12")} />}
+           count={stats.counts['MOTOCICLETA'] || 0}
+           capacity={capacityMotos}
+           subtitle="Motocicletas"
+           onSave={updateCapacityMotos}
+        />
+        <CapacityCard
+           title="Bicis"
+           icon={Bike}
+           count={stats.counts['BICICLETA'] || 0}
+           capacity={capacityBicis}
+           subtitle="Bicicletas"
+           onSave={updateCapacityBicis}
+        />
       </div>
 
       <Card className="border border-border/70 bg-card/80 shadow-sm transition-all duration-300">
@@ -183,7 +198,7 @@ const DashboardView = ({ user }: { user: User }) => {
         </div>
         <div className="overflow-x-auto border-t border-border/60">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border/60 bg-muted/30 text-muted-foreground"><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Vehiculo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Ingreso / Tiempo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Pago / Tarifa</th><th className="h-10 px-6 text-right font-medium uppercase text-[10px] tracking-widest">Accion</th></tr></thead>
+            <thead><tr className="border-b border-border/60 bg-muted/30 text-muted-foreground"><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest w-20">Accion</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Vehiculo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Ingreso / Tiempo</th><th className="h-10 px-6 text-left font-medium uppercase text-[10px] tracking-widest">Pago / Tarifa</th></tr></thead>
             <tbody className="divide-y divide-border/60">
               {filtered.map(vehicle => {
                 const diff = now - vehicle.entryTime;
@@ -191,7 +206,7 @@ const DashboardView = ({ user }: { user: User }) => {
                 const mins = Math.floor((diff % 3600000) / 60000);
                 const billedHrs = Math.max(1, Math.ceil(diff / 3600000));
                 const total = vehicle.isMonthly ? 0 : billedHrs * vehicle.appliedRate;
-                return <tr key={vehicle.id} className="transition-colors hover:bg-muted/20"><td className="px-6 py-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/70 bg-muted/20 text-muted-foreground">{vehicle.type === 'AUTOMOVIL' && <Car size={18} />}{vehicle.type === 'MOTOCICLETA' && <Bike size={18} className="rotate-12" />}{vehicle.type === 'BICICLETA' && <Bike size={18} />}{vehicle.type === 'BUS' && <Bus size={18} />}{vehicle.type === 'CAMION' && <Truck size={18} />}</div><div className="flex flex-col"><span className="text-base font-black text-foreground">{vehicle.plate}</span><span className="text-[10px] font-bold uppercase text-muted-foreground">{vehicle.type}</span></div></div></td><td className="px-6 py-4"><div className="flex flex-col text-xs"><span className="font-bold text-foreground/80">{hrs}h {mins}m transcurridas</span><div className="flex items-center gap-1.5 text-muted-foreground"><span className="font-medium text-emerald-500">{new Date(vehicle.entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span><span className="text-[10px]">({new Date(vehicle.entryTime).toLocaleDateString([], { day: '2-digit', month: 'short' })})</span></div></div></td><td className="px-6 py-4">{vehicle.isMonthly ? <div className="flex flex-col gap-1"><Badge variant="outline" className="w-fit border-sky-200/70 bg-sky-100/60 text-[10px] font-bold text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">MENSUALIDAD</Badge>{vehicle.ownerInfo && <span className="text-[10px] font-medium text-muted-foreground">{vehicle.ownerInfo.name}</span>}</div> : <div className="flex flex-col"><span className="text-base font-black text-foreground">${formatCurrency(total)}</span><span className="text-[10px] font-medium text-muted-foreground">Tarifa: ${formatCurrency(vehicle.appliedRate)}/h</span></div>}</td><td className="px-6 py-4 text-right"><Button variant="outline" size="sm" onClick={() => { setSelectedVehicle(vehicle); setIsExitModalOpen(true); }}>Salida</Button></td></tr>
+                return <tr key={vehicle.id} className="transition-colors hover:bg-muted/20"><td className="px-6 py-4 text-left"><Button variant="outline" size="sm" onClick={() => { setSelectedVehicle(vehicle); setIsExitModalOpen(true); }}>Salida</Button></td><td className="px-6 py-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/70 bg-muted/20 text-muted-foreground">{vehicle.type === 'AUTOMOVIL' && <Car size={18} />}{vehicle.type === 'MOTOCICLETA' && <Bike size={18} className="rotate-12" />}{vehicle.type === 'BICICLETA' && <Bike size={18} />}{vehicle.type === 'BUS' && <Bus size={18} />}{vehicle.type === 'CAMION' && <Truck size={18} />}</div><div className="flex flex-col"><span className="text-base font-black text-foreground">{vehicle.plate}</span><span className="text-[10px] font-bold uppercase text-muted-foreground">{vehicle.type}</span></div></div></td><td className="px-6 py-4"><div className="flex flex-col text-xs"><span className="font-bold text-foreground/80">{hrs}h {mins}m transcurridas</span><div className="flex items-center gap-1.5 text-muted-foreground"><span className="font-medium text-emerald-500">{new Date(vehicle.entryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span><span className="text-[10px]">({new Date(vehicle.entryTime).toLocaleDateString([], { day: '2-digit', month: 'short' })})</span></div></div></td><td className="px-6 py-4">{vehicle.isMonthly ? <div className="flex flex-col gap-1"><Badge variant="outline" className="w-fit border-sky-200/70 bg-sky-100/60 text-[10px] font-bold text-sky-700 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">MENSUALIDAD</Badge>{vehicle.ownerInfo && <span className="text-[10px] font-medium text-muted-foreground">{vehicle.ownerInfo.name}</span>}</div> : <div className="flex flex-col"><span className="text-base font-black text-foreground">${formatCurrency(total)}</span><span className="text-[10px] font-medium text-muted-foreground">Tarifa: ${formatCurrency(vehicle.appliedRate)}/h</span></div>}</td></tr>
               })}
               {filtered.length === 0 && <tr><td colSpan={4} className="py-20 text-center italic text-muted-foreground">No hay vehiculos en patio</td></tr>}
             </tbody>
