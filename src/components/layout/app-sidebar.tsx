@@ -139,7 +139,11 @@ export function AppSidebar({ profile }: { profile: UserProfile }) {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 font-bold"
-                  onClick={() => signOutSession()}
+                  onClick={() => {
+                    setTimeout(() => {
+                      signOutSession()
+                    }, 100)
+                  }}
                 >
                   <LogOut className="mr-2 size-4" />
                   <span>Cerrar sesion</span>
