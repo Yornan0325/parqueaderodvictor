@@ -75,9 +75,7 @@ const DashboardView = ({ user }: { user: User }) => {
   const [selectedVehicle, setSelectedVehicle] = useState<ParkedVehicle | null>(null);
   const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'EFECTIVO' | 'TRANSFERENCIA'>('EFECTIVO');
-  const { capacity, capacityAutos, capacityMotos, capacityBicis, updateCapacity, updateCapacityAutos, updateCapacityMotos, updateCapacityBicis } = useParkingSettings();
-  const [editingCapacity, setEditingCapacity] = useState(false);
-  const [capacityInput, setCapacityInput] = useState('');
+  const {capacityAutos, capacityMotos, capacityBicis, updateCapacityAutos, updateCapacityMotos, updateCapacityBicis } = useParkingSettings();
 
   const { isConnected, print } = usePrinter();
 
