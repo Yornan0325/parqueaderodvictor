@@ -23,10 +23,22 @@ import { navConfig } from "@/components/config/navigation"
 import { signOutSession } from "@/firebase/auth"
 import { cn } from "@/lib/utils"
 import type { UserProfile } from "@/components/types"
+import { useQuery } from "@tanstack/react-query"
+import { doc } from "firebase/firestore"
+import { db } from "@/firebase/firebase"
+import { safeGetDoc } from "@/lib/firestore-safe"
 
 export function AppSidebar({ profile }: { profile: UserProfile }) {
   const navigate = useNavigate()
   const location = useLocation()
+
+  const { data: appVersion } = useQuery({
+    queryKey: ['app-version'],
+    queryFn: async () => {
+      const snap = await safeGetDoc(doc(db, 'config', 'appInfo'));
+      return snap.exists() ? snap.data()?.version || '1.0.3' : '1.0.3';
+    }
+  });
 
   const usersNavItem = navConfig.find((item) => item.href === "/usuarios")
   const canOpenUsers =
@@ -98,9 +110,9 @@ export function AppSidebar({ profile }: { profile: UserProfile }) {
               <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                   size="lg"
-                  className="w-full h-14 rounded-xl border border-sidebar-border/80 bg-sidebar-accent/40 shadow-sm transition-all hover:bg-sidebar-accent hover:border-sidebar-border data-[state=open]:bg-sidebar-accent"
+                  className="w-full h-14    hover:bg-sidebar-accent hover:border-1 data-[state=open]:bg-sidebar-accent"
                 >
-                  <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-inner group-data-[collapsible=icon]:size-8">
+                  <div className="flex aspect-square size-9 items-center justify-center rounded-lg   text-sidebar-primary-foreground  group-data-[collapsible=icon]:size-8">
                     <User2 className="size-5 group-data-[collapsible=icon]:size-4" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight ml-2 group-data-[collapsible=icon]:hidden">
@@ -152,6 +164,11 @@ export function AppSidebar({ profile }: { profile: UserProfile }) {
             </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
+        <div className="  pb-1 pt-1.5 opacity-60 group-data-[collapsible=icon]:hidden">
+          <p className="text-[10px] font-bold text-muted-foreground   tracking-widest">
+            Version: {appVersion}
+          </p>
+        </div>
       </SidebarFooter>
     </Sidebar>
   )
