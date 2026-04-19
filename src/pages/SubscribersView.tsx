@@ -153,7 +153,7 @@ const SubscribersView = ({ user }: { user: User }) => {
                 <div><h3 className="mb-1 leading-none font-bold text-foreground">{s.name}</h3><h3 className="mb-1 text-sm leading-none text-muted-foreground">Doc: {s.documentId}</h3></div>
               </div>
 
-              <div className="flex gap-1 opacity-0 transition-all group-hover:opacity-100">
+              <div className="flex gap-1 opacity-100 sm:opacity-0 transition-all group-hover:opacity-100">
                 <Button onClick={() => openEditor(s)} variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"><Pencil size={15} /></Button>
                 <Button
                   onClick={() => s.id && toggleHidden(s.id)}
