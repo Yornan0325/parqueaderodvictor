@@ -1,4 +1,4 @@
-﻿import {
+import {
   addDoc,
   collection,
   deleteDoc,
@@ -177,20 +177,34 @@ export const safeAddDoc = async <T extends DocumentData>(
   collectionRef: CollectionReference<T>,
   data: T
 ) => {
-  try {
-    return await addDoc(collectionRef, data)
-  } catch (error) {
-    if (!isOfflineError(error)) throw error
+  // Generar la referencia sincrónicamente para no bloquear la UI y obtener el ID de inmediato
+  const newDocRef = doc(collectionRef);
+  const writePromise = setDoc(newDocRef, data as any);
 
+  if (!navigator.onLine) {
+    // Si sabemos que estamos fuera de línea, dejamos que Firebase encole nativamente el guardado
+    writePromise.catch(console.error);
+    return newDocRef; // Retornamos para que la UI termine de "cargar" de inmediato
+  }
+
+  try {
+    // Si estamos "online" pero la red es muy lenta o se colgó, esperamos máximo 2.5 seg
+    await Promise.race([
+      writePromise,
+      new Promise((resolve) => setTimeout(resolve, 2500))
+    ]);
+    return newDocRef;
+  } catch (error) {
+    if (!isOfflineError(error)) throw error;
+    
     enqueueOperation({
       id: randomId(),
       kind: "add",
       path: collectionRef.path,
       data: toSerializableData(data),
       createdAt: Date.now(),
-    })
-
-    return { id: `offline_${randomId()}` }
+    });
+    return newDocRef;
   }
 }
 
@@ -199,14 +213,20 @@ export const safeSetDoc = async <T extends DocumentData>(
   data: Partial<T>,
   options?: any
 ) => {
+  const writePromise = options ? setDoc(docRef, data as T, options) : setDoc(docRef, data as T);
+
+  if (!navigator.onLine) {
+    writePromise.catch(console.error);
+    return;
+  }
+
   try {
-    if (options) {
-      await setDoc(docRef, data as T, options)
-    } else {
-      await setDoc(docRef, data as T)
-    }
+    await Promise.race([
+      writePromise,
+      new Promise((resolve) => setTimeout(resolve, 2500))
+    ]);
   } catch (error) {
-    if (!isOfflineError(error)) throw error
+    if (!isOfflineError(error)) throw error;
 
     enqueueOperation({
       id: randomId(),
@@ -215,7 +235,7 @@ export const safeSetDoc = async <T extends DocumentData>(
       data: toSerializableData(data),
       merge: options?.merge,
       createdAt: Date.now(),
-    })
+    });
   }
 }
 
@@ -223,10 +243,20 @@ export const safeUpdateDoc = async <T extends DocumentData>(
   docRef: DocumentReference<T>,
   data: Partial<T>
 ) => {
+  const writePromise = updateDoc(docRef, data as DocumentData);
+
+  if (!navigator.onLine) {
+    writePromise.catch(console.error);
+    return;
+  }
+
   try {
-    await updateDoc(docRef, data as DocumentData)
+    await Promise.race([
+      writePromise,
+      new Promise((resolve) => setTimeout(resolve, 2500))
+    ]);
   } catch (error) {
-    if (!isOfflineError(error)) throw error
+    if (!isOfflineError(error)) throw error;
 
     enqueueOperation({
       id: randomId(),
@@ -234,21 +264,31 @@ export const safeUpdateDoc = async <T extends DocumentData>(
       path: docRef.path,
       data: toSerializableData(data),
       createdAt: Date.now(),
-    })
+    });
   }
 }
 
 export const safeDeleteDoc = async (docRef: DocumentReference<DocumentData>) => {
+  const writePromise = deleteDoc(docRef);
+
+  if (!navigator.onLine) {
+    writePromise.catch(console.error);
+    return;
+  }
+
   try {
-    await deleteDoc(docRef)
+    await Promise.race([
+      writePromise,
+      new Promise((resolve) => setTimeout(resolve, 2500))
+    ]);
   } catch (error) {
-    if (!isOfflineError(error)) throw error
+    if (!isOfflineError(error)) throw error;
 
     enqueueOperation({
       id: randomId(),
       kind: "delete",
       path: docRef.path,
       createdAt: Date.now(),
-    })
+    });
   }
 }
