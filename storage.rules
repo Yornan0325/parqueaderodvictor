@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/objects {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/b/$(bucket)/o/usuarios/$(request.auth.token.email)).data.role == 'admin';
+    }
+
+    // Imágenes públicas (si las hay)
+    match /public/{imageId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    //私人文件：solo admin
+    match /private/{allPaths=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // 默认拒绝 todo
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

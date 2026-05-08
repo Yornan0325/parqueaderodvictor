@@ -3,17 +3,69 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // This rule allows anyone with your Firestore database reference to view, edit,
-    // and delete all data in your Firestore database. It is useful for getting
-    // started, but it is configured to expire after 30 days because it
-    // leaves your app open to attackers. At that time, all client
-    // requests to your Firestore database will be denied.
-    //
-    // Make sure to write security rules for your app before that time, or else
-    // all client requests to your Firestore database will be denied until you Update
-    // your rules
+    // Función helper: verificar que el usuario está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Función helper: obtener el rol del usuario actual
+    function getUserRole() {
+      return get(/databases/$(database)/documents/usuarios/$(request.auth.token.email)).data.role;
+    }
+
+    // Función helper: verificar rol
+    function hasRole(role) {
+      return isAuthenticated() && getUserRole() == role;
+    }
+
+    // Función helper: es admin
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    // Función helper: es employee o admin
+    function isEmployeeOrAdmin() {
+      return hasRole('employee') || isAdmin();
+    }
+
+    // === COLECCIONES ===
+
+    // Usuarios: solo admin puede gestionar usuarios
+    match /usuarios/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Suscripciones: lectura pública, escritura solo admin
+    match /suscripciones/{subId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Registros de ingreso: employee+ pueden crear, todos pueden leer sus propios
+    match /registros/{regId} {
+      allow read: if isAuthenticated();
+      allow create: if isEmployeeOrAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Configuración: solo admin
+    match /configuracion/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // Historial: todos los autenticados pueden leer, employee+ pueden crear
+    match /historial/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isEmployeeOrAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // Cualquier otra colección: solo lectura
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2026, 5, 18);
+      allow read: if isAuthenticated();
+      allow write: if false;
     }
   }
 }
